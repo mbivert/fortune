@@ -1,5 +1,4 @@
 package main
-// ton péché il est sot <> ton pc il est chaud
 import (
 	"bufio"
 	"fmt"
