@@ -1,0 +1,3 @@
+fortunes/fortunes and fortunes/fortunes2 are from Slackware 14.1 /usr/share/games/fortunes files.
+9fortunes is from 9front: http://plan9front.googlecode.com/hg/sys/games/lib/fortunes,
+modified to fit format (Edit ,x/\n/c/\n%\n/).

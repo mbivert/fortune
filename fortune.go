@@ -69,7 +69,7 @@ func init() {
 
 func main() {
 	if len(os.Args) <= 1 {
-		err := loadfortunes("/mnt/slack/usr/share/games/fortunes/fortunes")
+		err := loadfortunes("fortunes/9fortunes")
 		if err != nil {
 			fmt.Printf("%s\n", err)
 		}
