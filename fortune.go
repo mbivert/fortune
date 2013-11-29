@@ -3,6 +3,7 @@ import (
 	"bufio"
 	"fmt"
 	"html/template"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -72,7 +73,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Cannot open fortune.log: ", err)
 	}
-	log.setOutput(output)
+	log.SetOutput(output)
 
 	if len(os.Args) <= 1 {
 		err := loadfortunes("fortunes/9fortunes")
