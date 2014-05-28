@@ -1,12 +1,14 @@
 package main
+
 import (
 	"bufio"
-	"fmt"
+	"flag"
 	"html/template"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -16,9 +18,13 @@ type Page struct {
 	Content string
 }
 
-var fortunes [][]byte
+var (
+	port       = flag.String("port", "8081", "Listening HTTP port")
+	fortuneDir = flag.String("dir", "./fortunes", "Fortune directory")
+	fortunes   [][]byte
+)
 
-func loadfortunes(fn string) error {
+func loadFortunes(fn string) error {
 	f, err := os.Open(fn)
 	if err != nil {
 		return err
@@ -64,35 +70,25 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	skel.Execute(w, page)
 }
 
-func init() {
-	rand.Seed(time.Now().Unix())
-}
-
 func main() {
-	output, err := os.OpenFile("fortune.log", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660)
-	if err != nil {
-		log.Fatal("Cannot open fortune.log: ", err)
-	}
-	log.SetOutput(output)
+	rand.Seed(time.Now().Unix())
 
-	if len(os.Args) <= 1 {
-		err := loadfortunes("fortunes/9fortunes")
-		if err != nil {
-			log.Println("Error while parsing 9fortunes: %s\n", err)
-		}
-	}
-	for i := 1; i < len(os.Args); i++ {
-		err := loadfortunes(os.Args[i])
-		if err != nil {
-			log.Println("Error while parsing %s: %s\n", os.Args[i], err)
+	flag.Parse()
+
+	if files, err := filepath.Glob(*fortuneDir + "/*"); err != nil {
+		log.Fatal(err)
+	} else {
+		for _, f := range files {
+			if err := loadFortunes(f); err != nil {
+				log.Println(err)
+			}
 		}
 	}
 
-	fmt.Printf("%d fortunes loaded\n", len(fortunes))
+	log.Println(len(fortunes), "fortunes loaded")
 
 	http.HandleFunc("/", handler)
-	err = http.ListenAndServe(":8081", nil)
-	if err != nil {
-		log.Fatal("Cannot start HTTP server: ", err)
-	}
+
+	log.Println("Launching on http://localhost:" + *port)
+	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }

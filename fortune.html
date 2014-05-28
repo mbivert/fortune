@@ -14,10 +14,13 @@
 			}
 		</style>
 	</head>
-	<h1>Fortune n°{{.Id}}</h1>
-	<div id="content">
-	<pre><code>
+	<body>
+		<h1>Fortune n°{{.Id}}</h1>
+		<p> <a href="/{{.Id}}">Share</a>, <a href="/">More</a></p>
+		<div id="content">
+		<pre><code>
 {{.Content}}
-</code></pre>
-	</div>
+	</code></pre>
+		</div>
+	</body>
 </html>
