@@ -21,7 +21,9 @@ type Page struct {
 var (
 	port       = flag.String("port", "8081", "Listening HTTP port")
 	fortuneDir = flag.String("dir", "./fortunes", "Fortune directory")
-	fortunes   [][]byte
+	fortunes   []string
+	addc       = make(chan string)
+	idc        = make(chan int)
 )
 
 func loadFortunes(fn string) error {
@@ -35,21 +37,21 @@ func loadFortunes(fn string) error {
 
 	var fortune []byte
 
-	line, err := r.ReadBytes('\n')
+	line, err := r.ReadString('\n')
 	for err == nil {
 		/* next fortune */
 		if len(line) == 2 && line[0] == '%' {
-			fortunes = append(fortunes, fortune)
+			fortunes = append(fortunes, string(fortune))
 			fortune = nil
 		} else {
 			fortune = append(fortune, line...)
 		}
-		line, err = r.ReadBytes('\n')
+		line, err = r.ReadString('\n')
 	}
 
 	/* add a random fortune if none */
 	if len(fortunes) == 0 {
-		fortunes = append(fortunes, []byte("No fortune!"))
+		fortunes = append(fortunes, "No fortune!")
 	}
 
 	return nil
@@ -66,8 +68,43 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 	skel, _ := template.ParseFiles("fortune.html")
 
-	page := &Page{Id: strconv.Itoa(n), Content: string(fortunes[n])}
+	page := &Page{Id: strconv.Itoa(n), Content: fortunes[n]}
 	skel.Execute(w, page)
+}
+
+func addUser(fortune string) {
+	f, err := os.OpenFile(*fortuneDir+"/ufortunes",
+		os.O_RDWR|os.O_APPEND|os.O_CREATE, 0600)
+	if err != nil {
+		log.Println(err)
+	} else {
+		n, err := f.WriteString(fortune)
+		if err != nil { log.Println(err, n) }
+		f.WriteString("\n%\n")
+		f.Close()
+	}
+}
+
+func userFortunes() {
+	for {
+		select {
+		case fortune := <- addc:
+			fortunes = append(fortunes, fortune)
+			addUser(fortune)
+			idc <- len(fortunes)-1
+		}
+	}
+}
+
+func add(w http.ResponseWriter, r *http.Request) {
+	// raw anti-spam
+	if r.FormValue("content") != "" { return }
+
+	if fortune := r.FormValue("fortune"); fortune != "" {
+		addc <- fortune
+	}
+
+	http.Redirect(w, r, "/"+strconv.Itoa(<- idc), http.StatusFound)
 }
 
 func main() {
@@ -85,9 +122,12 @@ func main() {
 		}
 	}
 
+	go userFortunes()
+
 	log.Println(len(fortunes), "fortunes loaded")
 
 	http.HandleFunc("/", handler)
+	http.HandleFunc("/add", add)
 
 	log.Println("Launching on http://localhost:" + *port)
 	log.Fatal(http.ListenAndServe(":"+*port, nil))
