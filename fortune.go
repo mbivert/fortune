@@ -101,6 +101,7 @@ func userFortunes() {
 }
 
 func add(w http.ResponseWriter, r *http.Request) {
+	raw := ""
 	// raw anti-spam
 	if r.FormValue("content") != "" { return }
 
@@ -108,7 +109,9 @@ func add(w http.ResponseWriter, r *http.Request) {
 		addc <- fortune
 	}
 
-	http.Redirect(w, r, "/"+strconv.Itoa(<- idc), http.StatusFound)
+	if r.FormValue("raw") != "" { raw = "?raw=1" }
+
+	http.Redirect(w, r, "/"+strconv.Itoa(<- idc)+raw, http.StatusFound)
 }
 
 func main() {
