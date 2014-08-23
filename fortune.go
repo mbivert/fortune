@@ -21,6 +21,7 @@ type Page struct {
 var (
 	port       = flag.String("port", "8081", "Listening HTTP port")
 	fortuneDir = flag.String("dir", "./fortunes", "Fortune directory")
+	skel, _    = template.ParseFiles("fortune.html")
 	fortunes   []string
 	addc       = make(chan string)
 	idc        = make(chan int)
@@ -66,10 +67,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if n >= len(fortunes) {
 		n = n % len(fortunes)
 	}
-	skel, _ := template.ParseFiles("fortune.html")
 
-	page := &Page{Id: strconv.Itoa(n), Content: fortunes[n]}
-	skel.Execute(w, page)
+	if r.FormValue("raw") == "" {
+		page := &Page{Id: strconv.Itoa(n), Content: fortunes[n]}
+		skel.Execute(w, page)
+	} else {
+		w.Write([]byte(fortunes[n]))
+	}
 }
 
 func addUser(fortune string) {
