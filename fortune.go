@@ -1,3 +1,4 @@
+// TODO: need cleanup
 package main
 
 import (
@@ -114,6 +115,12 @@ func add(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/"+strconv.Itoa(<- idc)+raw, http.StatusFound)
 }
 
+func last(w http.ResponseWriter, r *http.Request) {
+	raw := ""
+	if r.FormValue("raw") != "" { raw = "?raw=1" }
+	http.Redirect(w, r, "/"+strconv.Itoa(len(fortunes)-1)+raw, http.StatusFound)
+}
+
 func main() {
 	rand.Seed(time.Now().Unix())
 
@@ -135,6 +142,7 @@ func main() {
 
 	http.HandleFunc("/", handler)
 	http.HandleFunc("/add", add)
+	http.HandleFunc("/last", last)
 
 	log.Println("Launching on http://localhost:" + *port)
 	log.Fatal(http.ListenAndServe(":"+*port, nil))

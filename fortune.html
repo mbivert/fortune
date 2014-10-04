@@ -4,35 +4,56 @@
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 		<title>Fortune n°{{.Id}}</title>
 		<style>
+			div#main, div#content, textarea, button {
+				-webkit-border-radius:	10px;
+				-khtml-border-radius:	10px;
+				-moz-border-radius:	10px;
+				border-radius:		10px;
+
+				padding:		1%;
+			}
 			div#main {
-				margin-left:	12.5%;
-				margin-right:	12.5%;
-				text-align:	center;
+				margin-left:		12.5%;
+				margin-right:		12.5%;
+				text-align:		center;
+				background-color:	lavender;
 			}
 			div#content {
 				text-align:		justify;
+				border:			1px solid black;
+				background-color:	lightblue;
+			}
+			#add {
+				margin-left:		10%;
+				margin-right:		10%;
+				text-align:		center;
+				width:			80%;
+				height:			30%;
+			}
+			body {
+				background-color:	aliceblue;
 			}
 			textarea {
-				width:		50%;
-				height:		30%;
+				background-color:	lightyellow;
 			}
 		</style>
 	</head>
 	<body>
 		<div id="main">
 			<h1>Fortune n°{{.Id}}</h1>
-			<p> <a href="/{{.Id}}">Share</a>, <a href="/">More</a></p>
+			<p> <a href="/{{.Id}}">Share</a>, <a href="/">More</a>, <a href="/last">Last</a></p>
 				<div id="content">
 				<pre><code>{{.Content}}</code></pre>
 			</div>
 			<hr />
-		</div>
 		<div id="add">
 			<form action="/add" method="post">
 				<textarea name="fortune" rows="10" cols="80"></textarea>
 				<input type="text" name="content" style="display: none;">
+				<br />
 				<button type="submit">Add</button>
 			</form>
+		</div>
 		</div>
 	</body>
 </html>
